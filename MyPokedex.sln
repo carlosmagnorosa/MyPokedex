@@ -9,7 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyPokedex.Test", "MyPokedex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyPokedex.Infrastructure", "MyPokedex.Infrastructure\MyPokedex.Infrastructure.csproj", "{DD55001E-3F46-4D0E-A9C3-13D6AD549760}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPokedex.Core", "MyPokedex.Core\MyPokedex.Core.csproj", "{46EE6FA3-7086-43D2-9B68-0F2647CE8B50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyPokedex.Core", "MyPokedex.Core\MyPokedex.Core.csproj", "{46EE6FA3-7086-43D2-9B68-0F2647CE8B50}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4EA04BF2-B0C0-42BB-ACCB-7E33025F2917}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

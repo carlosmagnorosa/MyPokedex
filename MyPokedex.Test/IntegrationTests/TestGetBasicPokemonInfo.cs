@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using MyPokedex.Api;
 using MyPokedex.Core.PokeApi;
+using MyPokedex.Infrastructure.PokeApi;
 using MyPokedex.Test.ApiResponses;
 using MyPokedex.Test.Helpers;
 using System;
@@ -58,9 +59,9 @@ namespace MyPokedex.Test.IntegrationTests
                          .AddEnvironmentVariables();
                  });
                 builder.ConfigureTestServices(services =>
-                {                    
+                {
                     //override IHttpClientFactory
-                    services.AddSingleton<IHttpClientFactory>(mockHttpClientFactory.Object);
+                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
                 });
             }).CreateClient();
 
@@ -90,7 +91,7 @@ namespace MyPokedex.Test.IntegrationTests
                 builder.ConfigureTestServices(services =>
                 {
                     //override IHttpClientFactory
-                    services.AddSingleton<IHttpClientFactory>(mockHttpClientFactory.Object);
+                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
                 });
             }).CreateClient();
 
@@ -123,7 +124,7 @@ namespace MyPokedex.Test.IntegrationTests
                 builder.ConfigureTestServices(services =>
                 {
                     //override IHttpClientFactory
-                    services.AddSingleton<IHttpClientFactory>(mockHttpClientFactory.Object);
+                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
                 });
             }).CreateClient();
 
@@ -135,9 +136,9 @@ namespace MyPokedex.Test.IntegrationTests
         }
 
         [Fact]
-        public async Task GetBasicInfoOfknownPokemonWithUnknownLanguage_Return503NotFound()
+        public async Task GetBasicInfoOfknownPokemonWithUnknownLanguage_Return503ServiceUnavailable()
         {
-            var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.NotFound, string.Empty);
+            var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, PokemonSpeciesApiResponses.DittoJsonResponse);
 
             // Arrange
             var client = _factory.WithWebHostBuilder(builder =>
@@ -152,7 +153,7 @@ namespace MyPokedex.Test.IntegrationTests
                 builder.ConfigureTestServices(services =>
                 {
                     //override IHttpClientFactory
-                    services.AddSingleton<IHttpClientFactory>(mockHttpClientFactory.Object);
+                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
                 });
             }).CreateClient();
 
@@ -160,7 +161,7 @@ namespace MyPokedex.Test.IntegrationTests
             var response = await client.GetAsync("/pokemon/foobar");
 
             // Assert
-            Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.ServiceUnavailable, response.StatusCode);
         }
     }
 }

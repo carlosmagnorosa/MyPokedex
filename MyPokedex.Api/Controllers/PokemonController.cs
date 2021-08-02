@@ -39,5 +39,26 @@ namespace MyPokedex.Api.Controllers
                 return StatusCode(503);
             }
         }
+
+        [HttpGet("translated/{name}")]
+        public async Task<IActionResult> GetTranslated(string name)
+        {
+            try
+            {
+                return Ok(await _myPokedexService.GetPokedexTranslatedInfo(name));
+            }
+            catch (PokemonNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (PokeApiException)
+            {
+                return StatusCode(503);
+            }
+            catch (FunTranslationsException)
+            {
+                return StatusCode(503);
+            }
+        }
     }
 }

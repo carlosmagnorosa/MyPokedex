@@ -10,5 +10,7 @@ namespace MyPokedex.Core
     public interface IMyPokedexService
     {
         Task<BasicPokemon> GetPokedexBasicInfo(string name);
+        Task<BasicPokemon> GetPokedexTranslatedInfo(string name);
+        Task<BasicPokemon> GetPokedexTranslatedInfo(BasicPokemon pokemon);
     }
 }

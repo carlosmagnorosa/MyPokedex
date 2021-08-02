@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,8 @@ namespace MyPokedex.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddResponseCaching();
             services.AddControllers();
             services.AddHttpClient();
             services.AddTransient<IMyPokedexService, MyPokedexService>();
@@ -50,6 +53,23 @@ namespace MyPokedex.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseResponseCaching();
+
+            // Cache GET Requests with Status OK for up to 10 Days.
+            // This App only publishes two idempotent GET operations so we can cache the result for a long time
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+                    {
+                        Public = true,
+                        MaxAge = TimeSpan.FromDays(30)
+                    };
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
+                    new string[] { "Accept-Encoding" };
+
+                await next();
+            });
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

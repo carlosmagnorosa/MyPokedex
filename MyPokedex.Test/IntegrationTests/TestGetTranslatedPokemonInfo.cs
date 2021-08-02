@@ -111,7 +111,7 @@ namespace MyPokedex.Test.IntegrationTests
         }
 
         [Fact]
-        public async Task GetTranslatedInfoWithRateLimitedFunTranslationService_Return503ServiceUnavailable()
+        public async Task GetTranslatedInfoWithRateLimitedFunTranslationService_ReturnOriginaldescription()
         {
             var expectedDescription = FunTranslationsApiResponses.YodaTranslation;
             var pokeApiServiceHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, PokemonSpeciesApiResponses.DittoJsonResponse);
@@ -125,7 +125,8 @@ namespace MyPokedex.Test.IntegrationTests
             var jsonString = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(System.Net.HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Equal("{\"name\":\"ditto\",\"description\":\"It can freely recombine its own cellular structure to\\ntransform into other life-forms.\",\"habitat\":\"urban\",\"isLegendary\":false}",
+               jsonString);
         }
     }
 }

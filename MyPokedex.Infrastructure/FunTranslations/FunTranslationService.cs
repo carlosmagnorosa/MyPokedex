@@ -4,11 +4,8 @@ using MyPokedex.Core.Exceptions;
 using MyPokedex.Core.External.FunTranslations;
 using MyPokedex.Infrastructure.FunTranslations.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MyPokedex.Infrastructure.FunTranslations
@@ -33,9 +30,16 @@ namespace MyPokedex.Infrastructure.FunTranslations
 
             if (!_memoryCache.TryGetValue(cacheKey, out cacheEntry))
             {
-                FunTranslationOutput translationOutput = await Translate(englishText, _funTranslationOptions.ShakespeareEndpoint);
-                cacheEntry = translationOutput.Contents.TranslatedText;
-                _memoryCache.Set(cacheKey, cacheEntry);
+                try
+                {
+                    FunTranslationOutput translationOutput = await Translate(englishText, _funTranslationOptions.ShakespeareEndpoint);
+                    cacheEntry = translationOutput.Contents.TranslatedText;
+                    _memoryCache.Set(cacheKey, cacheEntry);
+                }
+                catch (Exception)
+                {
+                    return englishText;
+                }
             }
 
             return cacheEntry;
@@ -48,9 +52,16 @@ namespace MyPokedex.Infrastructure.FunTranslations
 
             if (!_memoryCache.TryGetValue(cacheKey, out cacheEntry))
             {
-                FunTranslationOutput translationOutput = await Translate(englishText, _funTranslationOptions.YodaEndpoint);
-                cacheEntry = translationOutput.Contents.TranslatedText;
-                _memoryCache.Set(cacheKey, cacheEntry);
+                try
+                {
+                    FunTranslationOutput translationOutput = await Translate(englishText, _funTranslationOptions.YodaEndpoint);
+                    cacheEntry = translationOutput.Contents.TranslatedText;
+                    _memoryCache.Set(cacheKey, cacheEntry);
+                }
+                catch (Exception)
+                {
+                    return englishText;
+                }
             }
 
             return cacheEntry;

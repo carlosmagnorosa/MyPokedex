@@ -23,16 +23,23 @@ namespace MyPokedex.Infrastructure.PokeApi
 
         public async Task<BasicPokemon> GetPokemonInfo(string name)
         {
-            var pokemonSpecies = await  GetPokemonSpecies(name);
+            var pokemonSpecies = await GetPokemonSpecies(name);
 
-            return new BasicPokemon() 
+            var flavorTextEntry = pokemonSpecies.FlavorTextEntries
+                             .FirstOrDefault(p => p.Language.Name.Equals(_settings.FlavorTextLanguage, StringComparison.InvariantCultureIgnoreCase));
+
+            if (flavorTextEntry is null)
+            {
+                throw new PokeApiException($"No Description found for language: {_settings.FlavorTextLanguage}");
+            }
+
+            return new BasicPokemon()
             {
                 Name = pokemonSpecies.Name,
                 IsLegendary = pokemonSpecies.IsLegendary,
                 Habitat = pokemonSpecies.Habitat?.Name,
-                Description = pokemonSpecies.FlavorTextEntries
-                            .FirstOrDefault(p=>p.Language.Name.Equals(_settings.FlavorTextLanguage, StringComparison.InvariantCultureIgnoreCase)).FlavorText
-             };
+                Description = flavorTextEntry.FlavorText
+            };
         }
 
         private async Task<PokemonSpecies> GetPokemonSpecies(string name)

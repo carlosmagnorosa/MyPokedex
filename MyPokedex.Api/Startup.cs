@@ -34,6 +34,8 @@ namespace MyPokedex.Api
         {
 
             services.AddResponseCaching();
+            services.AddHealthChecks();
+            services.AddMemoryCache();
             services.AddControllers();
             services.AddHttpClient();
             services.AddTransient<IMyPokedexService, MyPokedexService>();
@@ -53,17 +55,20 @@ namespace MyPokedex.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors();
             app.UseResponseCaching();
 
             // Cache GET Requests with Status OK for up to 10 Days.
             // This App only publishes two idempotent GET operations so we can cache the result for a long time
+
+            int cacheDurationInDays = Configuration.GetValue<int>("ResponseCacheDurationInDays");
             app.Use(async (context, next) =>
             {
                 context.Response.GetTypedHeaders().CacheControl =
                     new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
                     {
                         Public = true,
-                        MaxAge = TimeSpan.FromDays(30)
+                        MaxAge = TimeSpan.FromDays(cacheDurationInDays)
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
                     new string[] { "Accept-Encoding" };
@@ -74,6 +79,7 @@ namespace MyPokedex.Api
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllers();
             });
         }

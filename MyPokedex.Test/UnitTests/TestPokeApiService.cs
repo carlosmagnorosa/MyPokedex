@@ -1,9 +1,12 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
 using MyPokedex.Core.Exceptions;
 using MyPokedex.Core.PokeApi;
 using MyPokedex.Infrastructure.PokeApi;
 using MyPokedex.Test.ApiResponses;
 using MyPokedex.Test.Helpers;
+using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -23,9 +26,10 @@ namespace MyPokedex.Test.UnitTests
             Mock<IHttpClientFactory> httpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(
                                                             HttpStatusCode.OK,
                                                             PokemonSpeciesApiResponses.DittoJsonResponse);
+            var memCache = new MemoryCache(Options.Create<MemoryCacheOptions>(new MemoryCacheOptions())) ;
 
             // Act
-            PokeApiService pokeApiService = new PokeApiService(httpClientFactory.Object, mockPokeApiSettings.Object);
+            PokeApiService pokeApiService = new PokeApiService(httpClientFactory.Object, mockPokeApiSettings.Object, memCache);
             var response = await pokeApiService.GetPokemonInfo("ditto");
 
 
@@ -45,7 +49,9 @@ namespace MyPokedex.Test.UnitTests
             Mock<IHttpClientFactory> httpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(
                                                             HttpStatusCode.NotFound,
                                                             string.Empty);
-            PokeApiService pokeApiService = new PokeApiService(httpClientFactory.Object, mockPokeApiSettings.Object);
+            
+            var memCache = new MemoryCache(Options.Create<MemoryCacheOptions>(new MemoryCacheOptions()));
+            PokeApiService pokeApiService = new PokeApiService(httpClientFactory.Object, mockPokeApiSettings.Object, memCache);
 
             // Act Assert
             await Assert.ThrowsAsync<PokemonNotFoundException>(async () => await pokeApiService.GetPokemonInfo("foobar"));
@@ -63,7 +69,8 @@ namespace MyPokedex.Test.UnitTests
                                                             HttpStatusCode.OK,
                                                             PokemonSpeciesApiResponses.DittoJsonResponse);
 
-            PokeApiService pokeApiService = new PokeApiService(httpClientFactory.Object, mockPokeApiSettings.Object);
+            var memCache = new MemoryCache(Options.Create<MemoryCacheOptions>(new MemoryCacheOptions()));
+            PokeApiService pokeApiService = new PokeApiService(httpClientFactory.Object, mockPokeApiSettings.Object, memCache);
 
             // Act Assert
             await Assert.ThrowsAsync<PokeApiException>(async () => await pokeApiService.GetPokemonInfo("ditto"));

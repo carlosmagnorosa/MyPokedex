@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -28,6 +29,25 @@ namespace MyPokedex.Test.IntegrationTests
             _factory = factory;
         }
 
+        private WebApplicationFactory<Startup> CreateWebApp(Mock<IHttpClientFactory> mockHttpClientFactory) {
+            return _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((context, config) =>
+                {
+                    config
+                       .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.test.json")
+                        .AddEnvironmentVariables();
+                });
+                builder.ConfigureTestServices(services =>
+                {
+                    //override IHttpClientFactory
+                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>(),
+                        sp.GetService<IMemoryCache>()));
+                });
+            });
+        }
+
         [Fact(Skip="Do not autorun, as it uses the real external dependency")]
         public async Task GetBasicInfoOfKnownPokemon_Return200OkAndExpectedContent()
         {
@@ -49,21 +69,7 @@ namespace MyPokedex.Test.IntegrationTests
             var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, PokemonSpeciesApiResponses.DittoJsonResponse);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                 {
-                     config
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                         .AddJsonFile("appsettings.test.json")
-                         .AddEnvironmentVariables();
-                 });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(mockHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/ditto");
@@ -79,21 +85,7 @@ namespace MyPokedex.Test.IntegrationTests
             var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, PokemonSpeciesApiResponses.DittoJsonResponse);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                {
-                    config
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.test.json")
-                        .AddEnvironmentVariables();
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(mockHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/ditto");
@@ -112,21 +104,7 @@ namespace MyPokedex.Test.IntegrationTests
             var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.NotFound, string.Empty);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                {
-                    config
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.test.json")
-                        .AddEnvironmentVariables();
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(mockHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/foobar");
@@ -138,24 +116,10 @@ namespace MyPokedex.Test.IntegrationTests
         [Fact]
         public async Task GetBasicInfoOfknownPokemonWithUnknownLanguage_Return503ServiceUnavailable()
         {
-            var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, PokemonSpeciesApiResponses.DittoJsonResponse);
+            var mockHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.TooManyRequests, PokemonSpeciesApiResponses.DittoJsonResponse);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                {
-                    config
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.test.langUK.json")
-                        .AddEnvironmentVariables();
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(mockHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(mockHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/foobar");

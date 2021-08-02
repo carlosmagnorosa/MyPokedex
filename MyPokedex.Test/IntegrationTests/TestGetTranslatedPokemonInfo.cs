@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -31,6 +32,30 @@ namespace MyPokedex.Test.IntegrationTests
             _factory = factory;
         }
 
+        private WebApplicationFactory<Startup> CreateWebApp(Mock<IHttpClientFactory> pokeApiHttpClientFactory, Mock<IHttpClientFactory> funTranslationServiceHttpClientFactory)
+        {
+            return _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((context, config) =>
+                {
+                    config
+                       .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.test.json")
+                        .AddEnvironmentVariables();
+                });
+                builder.ConfigureTestServices(services =>
+                {
+                    //override IHttpClientFactory
+                    services.AddTransient<IPokeApiService>((sp) => new PokeApiService(pokeApiHttpClientFactory.Object, sp.GetService<IPokeApiSettings>(),
+                        sp.GetService<IMemoryCache>()));
+                    services.AddTransient<IFunTranslationService>(
+                       (sp) => new FunTranslationService(funTranslationServiceHttpClientFactory.Object, 
+                       sp.GetService<IOptions<FunTranslationOptions>>(), 
+                       sp.GetService<IMemoryCache>()));
+                });
+            });
+        }
+
         [Fact]
         public async Task GetTranslatedInfoOfKnownPokemon_Return200Ok()
         {
@@ -38,24 +63,7 @@ namespace MyPokedex.Test.IntegrationTests
             var funTranslationServiceHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, FunTranslationsApiResponses.YodaTranslation);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                 {
-                     config
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                         .AddJsonFile("appsettings.test.json")
-                         .AddEnvironmentVariables();
-                 });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>(
-                        (sp) =>  new PokeApiService(pokeApiServiceHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                    services.AddTransient<IFunTranslationService>(
-                        (sp) => new FunTranslationService(funTranslationServiceHttpClientFactory.Object, sp.GetService<IOptions<FunTranslationOptions>>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(pokeApiServiceHttpClientFactory, funTranslationServiceHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/translated/ditto");
@@ -72,24 +80,7 @@ namespace MyPokedex.Test.IntegrationTests
             var funTranslationServiceHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, FunTranslationsApiResponses.YodaTranslation);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                {
-                    config
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.test.json")
-                        .AddEnvironmentVariables();
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>(
-                        (sp) => new PokeApiService(pokeApiServiceHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                    services.AddTransient<IFunTranslationService>(
-                        (sp) => new FunTranslationService(funTranslationServiceHttpClientFactory.Object, sp.GetService<IOptions<FunTranslationOptions>>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(pokeApiServiceHttpClientFactory, funTranslationServiceHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/translated/ditto");
@@ -109,24 +100,7 @@ namespace MyPokedex.Test.IntegrationTests
             var funTranslationServiceHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.OK, expectedDescription);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                {
-                    config
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.test.json")
-                        .AddEnvironmentVariables();
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>(
-                        (sp) => new PokeApiService(pokeApiServiceHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                    services.AddTransient<IFunTranslationService>(
-                        (sp) => new FunTranslationService(funTranslationServiceHttpClientFactory.Object, sp.GetService<IOptions<FunTranslationOptions>>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(pokeApiServiceHttpClientFactory, funTranslationServiceHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/translated/ditto");
@@ -144,24 +118,7 @@ namespace MyPokedex.Test.IntegrationTests
             var funTranslationServiceHttpClientFactory = HttpClientFactoryMoq.GetHttpClientFactoryMoq(System.Net.HttpStatusCode.TooManyRequests, string.Empty);
 
             // Arrange
-            var client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, config) =>
-                {
-                    config
-                       .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.test.json")
-                        .AddEnvironmentVariables();
-                });
-                builder.ConfigureTestServices(services =>
-                {
-                    //override IHttpClientFactory
-                    services.AddTransient<IPokeApiService>(
-                        (sp) => new PokeApiService(pokeApiServiceHttpClientFactory.Object, sp.GetService<IPokeApiSettings>()));
-                    services.AddTransient<IFunTranslationService>(
-                        (sp) => new FunTranslationService(funTranslationServiceHttpClientFactory.Object, sp.GetService<IOptions<FunTranslationOptions>>()));
-                });
-            }).CreateClient();
+            var client = CreateWebApp(pokeApiServiceHttpClientFactory, funTranslationServiceHttpClientFactory).CreateClient();
 
             // Act
             var response = await client.GetAsync("/pokemon/translated/ditto");

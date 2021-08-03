@@ -93,7 +93,7 @@ namespace MyPokedex.Test.IntegrationTests
 
             // Assert
 
-            Assert.Equal("{\"name\":\"ditto\",\"description\":\"It can freely recombine its own cellular structure to\\ntransform into other life-forms.\",\"habitat\":\"urban\",\"isLegendary\":false}",
+            Assert.Equal("{\"name\":\"ditto\",\"description\":\"It can freely recombine its own cellular structure to transform into other life-forms.\",\"habitat\":\"urban\",\"isLegendary\":false}",
                 jsonString);
 
         }

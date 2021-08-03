@@ -3,10 +3,12 @@ using MyPokedex.Core.Exceptions;
 using MyPokedex.Core.Model;
 using MyPokedex.Core.PokeApi;
 using MyPokedex.Infrastructure.PokeApi.Model;
+using MyPokedex.Infrastructure.StringOperations;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MyPokedex.Infrastructure.PokeApi
@@ -45,7 +47,7 @@ namespace MyPokedex.Infrastructure.PokeApi
                     Name = pokemonSpecies.Name,
                     IsLegendary = pokemonSpecies.IsLegendary,
                     Habitat = pokemonSpecies.Habitat?.Name,
-                    Description = flavorTextEntry.FlavorText
+                    Description = StringReplace.ConvertEscapeCharactersToSpaces(Regex.Unescape(flavorTextEntry.FlavorText))
                 };
 
                 _memoryCache.Set(cacheKey, cacheEntry);
@@ -53,6 +55,7 @@ namespace MyPokedex.Infrastructure.PokeApi
 
             return cacheEntry;
         }
+
 
         private async Task<PokemonSpecies> GetPokemonSpecies(string name)
         {

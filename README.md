@@ -21,7 +21,7 @@ Out of the shelf ASP.NET Core Health endpoint middleware
 
 Download Docker (https://docs.docker.com/get-docker/)
 
-Clone the code and in the Repository root run from the command line to build the docker image:
+Clone the code and in the Repository root run from the command line to build the docker image (it also runs the tests):
        
        docker build -t my-pokedex .
 
@@ -39,5 +39,5 @@ This API returns static data.
 An output cache was added to this API methods.
 A MemoryCache was also added to the 2 external services.
 
-For production, I would add improved logging, improved cache settings, global exception handling, a better Health check endpoint.
+For production, I would add improved logging, improved cache settings, global exception handling, a better Health check endpoint, and configure endpoints via Docker Environment variables
 Depending on the importance of the service, we could also add metrics to verify error rates, cache hits/size, third party api errors.

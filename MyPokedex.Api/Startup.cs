@@ -79,7 +79,7 @@ namespace MyPokedex.Api
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHealthChecks("/health");
+             //   endpoints.MapHealthChecks("/health");
                 endpoints.MapControllers();
             });
         }

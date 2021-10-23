@@ -25,6 +25,7 @@ jobs:
           command: |
             dotnet test
       - sonarcloud/scan
+      
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
 # Invoke jobs via workflows

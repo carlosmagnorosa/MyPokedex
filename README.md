@@ -37,6 +37,7 @@ http://localhost:8080/
 example: http://localhost:8080/Pokemon/ditto
 
 
+
 # Some remarks
 This API returns static data. An output cache was added to two /pokemon API methods.
 

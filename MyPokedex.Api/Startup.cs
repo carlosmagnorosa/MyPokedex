@@ -43,19 +43,27 @@ namespace MyPokedex.Api
             services.AddMemoryCache();
             services.AddControllers();
             services.AddHttpClient();
-            AddValidation(services);
+
             services.AddTransient<IMyPokedexService, MyPokedexService>();
             services.AddTransient<IFunTranslationService, FunTranslationService>();
             services.AddTransient<IPokeApiSettings, PokeApiSettings>();
             services.AddTransient<IPokeApiService, PokeApiService>();
-            services.AddTransient<PokeRepo, PokeRepo>();
+            
             services.AddTransient<IFavouritePokemonService, FavouritePokemonService>();
 
-            services.AddDbContext<PokeRepo>(options => options.UseInMemoryDatabase("favPokemons"));
+          
 
             services.Configure<TranslatedPokemonOptions>(Configuration.GetSection(
                                         TranslatedPokemonOptions.TranslatedPokemon));
             services.Configure<FunTranslationOptions>(Configuration.GetSection("External:FunTranslation"));
+
+            AddDbs(services);
+            AddValidation(services);
+        }
+
+        private static void AddDbs(IServiceCollection services)
+        {
+            services.AddDbContext<PokeRepo>(options => options.UseInMemoryDatabase("favPokemons"));
         }
 
         private static void AddValidation(IServiceCollection services)

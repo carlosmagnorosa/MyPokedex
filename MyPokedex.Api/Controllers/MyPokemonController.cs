@@ -29,7 +29,7 @@ namespace MyPokedex.Api.Controllers
                 return BadRequest(ModelState.Values);
             }
 
-            await this.favouritePokemonService.AddFavouritePokemon(request.Uid, request.PokemonName);
+            await this.favouritePokemonService.AddFavouritePokemon(request.UserId, request.PokemonName);
             return Ok();
         }
 

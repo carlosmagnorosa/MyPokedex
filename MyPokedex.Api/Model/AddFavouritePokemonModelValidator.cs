@@ -11,7 +11,7 @@ namespace MyPokedex.Api.Model
         public AddFavouritePokemonModelValidator()
         {
             RuleFor(x => x.PokemonName).NotEmpty();
-            RuleFor(x => x.Uid).GreaterThan(0);
+            RuleFor(x => x.UserId).GreaterThan(0);
         }
     }
 }
